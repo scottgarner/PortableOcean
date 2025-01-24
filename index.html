@@ -26,6 +26,7 @@
 
       import * as THREE from "three";
       import * as Tone from "tone";
+      import StartAudioContext from "startaudiocontext";
 
       // import Stats from "three/addons/libs/stats.module.js";
 
@@ -79,15 +80,14 @@
         Tone.Transport.start();
 
         // Remove event listeners after audio starts
-        document.body.removeEventListener("click", startAudio);
-        document.body.removeEventListener("touchstart", startAudio);
 
         console.log("Portable ocean started!");
       }
 
       // Add click or touchstart event listeners to the whole document
-      document.body.addEventListener("click", startAudio);
-      document.body.addEventListener("touchstart", startAudio);
+      StartAudioContext(Tone.context).then(() => {
+        startAudio();
+      });
       //
 
       init();
