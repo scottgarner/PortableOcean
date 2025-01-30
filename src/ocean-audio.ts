@@ -19,7 +19,7 @@ export class OceanAudio {
     pinkNoise.connect(pinkGain);
 
     // LFO for brown noise volume.
-    const brownLFO = new Tone.LFO({
+    new Tone.LFO({
       type: "sine",
       min: 0.2,
       max: 0.8,
@@ -29,7 +29,7 @@ export class OceanAudio {
       .start();
 
     // LFO for pink noise volume
-    const pinkLFO = new Tone.LFO({
+    new Tone.LFO({
       type: "sine",
       min: 0.1,
       max: 0.6,
