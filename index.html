@@ -26,8 +26,11 @@
 
       const initialize = () => {
         document.body.removeEventListener("click", initialize);
+
         oceanAudio.startAudio();
         oceanData.startData();
+
+        document.body.style.cursor = "none";
       };
 
       document.body.addEventListener("click", initialize);
