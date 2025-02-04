@@ -147,11 +147,7 @@ export class OceanView {
     const roll = THREE.MathUtils.degToRad(data.roll);
 
     const quaternion = new THREE.Quaternion();
-    quaternion.setFromEuler(new THREE.Euler(pitch, yaw, roll, "XYZ"));
-
-    const offset = new THREE.Quaternion();
-    offset.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
-    quaternion.premultiply(offset);
+    quaternion.setFromEuler(new THREE.Euler(-pitch, yaw, roll, "XYZ"));
 
     this.camera.quaternion.copy(quaternion);
   }
