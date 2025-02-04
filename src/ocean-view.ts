@@ -142,10 +142,18 @@ export class OceanView {
   }
 
   updateCamera(data: any) {
-    const pitchInRadians = THREE.MathUtils.degToRad(data.pitch);
-    const yawInRadians = THREE.MathUtils.degToRad(-data.yaw);
-    const rollInRadians = THREE.MathUtils.degToRad(data.roll);
-    this.camera.rotation.set(pitchInRadians, yawInRadians, rollInRadians);
+    const pitch = THREE.MathUtils.degToRad(data.pitch);
+    const yaw = THREE.MathUtils.degToRad(data.yaw);
+    const roll = THREE.MathUtils.degToRad(data.roll);
+
+    const quaternion = new THREE.Quaternion();
+    quaternion.setFromEuler(new THREE.Euler(pitch, yaw, roll, "YXZ"));
+
+    const offset = new THREE.Quaternion();
+    offset.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2);
+    quaternion.premultiply(offset);
+
+    this.camera.quaternion.copy(quaternion);
   }
 
   animate() {
