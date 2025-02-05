@@ -29,22 +29,21 @@ export class OceanData {
   }
 
   async startData() {
-    try {
-      this.port = await navigator.serial.getPorts().then((ports) => {
-        if (!ports.length) {
-          return navigator.serial.requestPort({});
-        }
-        return ports[0];
+    navigator.serial
+      .getPorts()
+      .then((ports) => {
+        if (!ports.length) return navigator.serial.requestPort({});
+        else return Promise.resolve(ports[0]);
+      })
+      .then((port) => {
+        port.open({ baudRate: 115200 }).then(() => {
+          this.reader = port.readable!.getReader();
+        });
+      })
+      .catch((error) => {
+        console.error("Error connecting to serial port:", error);
+        return;
       });
-
-      if (this.port) {
-        await this.port.open({ baudRate: 115200 });
-        this.reader = this.port.readable!.getReader();
-      }
-    } catch (error) {
-      console.error("Error connecting to serial port:", error);
-      return;
-    }
 
     if (!this.reader) return;
 
