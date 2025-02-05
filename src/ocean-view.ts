@@ -16,6 +16,7 @@ export class OceanView {
 
   xOffset: number = 0;
   yOffset: number = 0;
+  exposure: number = 0.5;
 
   sensorOrientation = new THREE.Quaternion();
 
@@ -50,7 +51,6 @@ export class OceanView {
         this.animate();
       });
       this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      this.renderer.toneMappingExposure = 0.5;
 
       this.container = document.getElementById("container")!;
       this.container.appendChild(this.renderer.domElement);
@@ -69,6 +69,10 @@ export class OceanView {
           this.yOffset += rotationStep;
         } else if (event.key === "ArrowRight") {
           this.yOffset -= rotationStep;
+        } else if (event.key === "=") {
+          this.exposure += 0.05;
+        } else if (event.key === "-") {
+          this.exposure -= 0.05;
         }
       });
     }
@@ -162,6 +166,8 @@ export class OceanView {
 
   animate() {
     const time = performance.now() * 0.001;
+
+    this.renderer.toneMappingExposure = this.exposure;
 
     // Reset camera.
     this.camera.quaternion.identity();
