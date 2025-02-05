@@ -165,13 +165,13 @@ export class OceanView {
 
     this.camera.quaternion
       .identity()
-      .multiply(this.sensorOrientation)
       .multiply(
         new THREE.Quaternion().setFromAxisAngle(
           new THREE.Vector3(0, 1, 0),
           this.yOffset
         )
       )
+      .multiply(this.sensorOrientation)
       .multiply(
         new THREE.Quaternion().setFromAxisAngle(
           new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion),
