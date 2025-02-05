@@ -180,7 +180,7 @@ export class OceanView {
     // Apply local X rotation.
     this.camera.quaternion.multiply(
       new THREE.Quaternion().setFromAxisAngle(
-        new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion),
+        new THREE.Vector3(1, 0, 0),
         this.xOffset
       )
     );
