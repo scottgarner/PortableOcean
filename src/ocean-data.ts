@@ -31,11 +31,9 @@ export class OceanData {
   async startData() {
     try {
       this.port = await navigator.serial.getPorts().then((ports) => {
-        // No ports available, prompt user for permission
         if (!ports.length) {
           return navigator.serial.requestPort({});
         }
-        // Port is available
         return ports[0];
       });
 
