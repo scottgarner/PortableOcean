@@ -1,6 +1,9 @@
 export class OceanData {
   callback: (data: any) => void;
 
+  port: SerialPort | null = null;
+  reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
+
   constructor(callback: (data: any) => void) {
     this.callback = callback;
   }
@@ -26,14 +29,26 @@ export class OceanData {
   }
 
   async startData() {
-    let [port] = await navigator.serial.getPorts();
-    if (!port) port = await navigator.serial.requestPort();
+    try {
+      this.port = await navigator.serial.getPorts().then((ports) => {
+        // No ports available, prompt user for permission
+        if (!ports.length) {
+          return navigator.serial.requestPort({});
+        }
+        // Port is available
+        return ports[0];
+      });
 
-    await port.open({ baudRate: 115200 });
-    if (!port.readable) return;
+      if (this.port) {
+        await this.port.open({ baudRate: 115200 });
+        this.reader = this.port.readable!.getReader();
+      }
+    } catch (error) {
+      console.error("Error connecting to serial port:", error);
+      return;
+    }
 
-    console.log("Opened port:", port);
-    const reader = port.readable.getReader();
+    if (!this.reader) return;
 
     let buffer = new Uint8Array(17);
     let bufferIndex = 0;
@@ -42,7 +57,7 @@ export class OceanData {
 
     try {
       while (true) {
-        const { value, done } = await reader.read();
+        const { value, done } = await this.reader.read();
         if (done) break;
 
         for (let i = 0; i < value.byteLength; i++) {
@@ -68,8 +83,16 @@ export class OceanData {
     } catch (error) {
       console.error(error);
     } finally {
-      reader.releaseLock();
-      await port.close();
+      if (this.reader) {
+        await this.reader.cancel();
+        this.reader.releaseLock();
+        this.reader = null;
+      }
+
+      if (this.port) {
+        await this.port.close();
+        this.port = null;
+      }
     }
   }
 }

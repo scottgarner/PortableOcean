@@ -1,6 +1,5 @@
 import * as THREE from "three";
 
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Water } from "three/addons/objects/Water.js";
 import { Sky } from "three/addons/objects/Sky.js";
 
@@ -11,13 +10,12 @@ export class OceanView {
   camera: THREE.PerspectiveCamera;
   renderer: THREE.WebGLRenderer;
 
-  dummyCamera: THREE.PerspectiveCamera;
-  rig: THREE.Group = new THREE.Group();
-
-  controls: OrbitControls;
   water: Water;
   sun: THREE.Vector3;
   sky: Sky = new Sky();
+
+  sensorOrientation = new THREE.Quaternion();
+  offsetOrientation = new THREE.Quaternion();
 
   parameters = {
     elevation: 2,
@@ -41,6 +39,7 @@ export class OceanView {
         1,
         20000
       );
+      this.camera.position.set(0, 16, 0);
 
       this.renderer = new THREE.WebGLRenderer();
       this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -53,24 +52,43 @@ export class OceanView {
 
       this.container = document.getElementById("container")!;
       this.container.appendChild(this.renderer.domElement);
-
-      this.dummyCamera = this.camera.clone();
-      this.dummyCamera.position.set(30, 30, 100);
-
-      this.scene.add(this.rig);
-      this.rig.add(this.camera);
     }
 
     //Controls
     {
-      this.controls = new OrbitControls(
-        this.dummyCamera,
-        this.renderer.domElement
-      );
-      this.controls.target.set(0, 30, 0);
-      this.controls.minDistance = 5.0;
-      this.controls.maxDistance = 5.0;
-      this.controls.update();
+      window.addEventListener("keydown", (event) => {
+        const rotationStep = 0.05; // Adjust this value for faster/slower rotation
+
+        if (event.key === "ArrowUp") {
+          this.offsetOrientation.multiply(
+            new THREE.Quaternion().setFromAxisAngle(
+              new THREE.Vector3(1, 0, 0),
+              rotationStep
+            )
+          ); // Pitch
+        } else if (event.key === "ArrowDown") {
+          this.offsetOrientation.multiply(
+            new THREE.Quaternion().setFromAxisAngle(
+              new THREE.Vector3(1, 0, 0),
+              -rotationStep
+            )
+          ); // Pitch
+        } else if (event.key === "ArrowLeft") {
+          this.offsetOrientation.multiply(
+            new THREE.Quaternion().setFromAxisAngle(
+              new THREE.Vector3(0, 1, 0),
+              rotationStep
+            )
+          ); // Yaw
+        } else if (event.key === "ArrowRight") {
+          this.offsetOrientation.multiply(
+            new THREE.Quaternion().setFromAxisAngle(
+              new THREE.Vector3(0, 1, 0),
+              -rotationStep
+            )
+          ); // Yaw
+        }
+      });
     }
 
     // Resize
@@ -155,17 +173,19 @@ export class OceanView {
     const yaw = THREE.MathUtils.degToRad(data.yaw);
     const roll = THREE.MathUtils.degToRad(data.roll);
 
-    const quaternion = new THREE.Quaternion();
-    quaternion.setFromEuler(new THREE.Euler(-pitch, -yaw, roll, "YXZ"));
-
-    this.camera.quaternion.copy(quaternion);
+    this.sensorOrientation.setFromEuler(
+      new THREE.Euler(-pitch, -yaw, roll, "YXZ")
+    );
   }
 
   animate() {
-    this.rig.rotation.copy(this.dummyCamera.rotation);
-    this.rig.position.copy(this.dummyCamera.position);
-
     const time = performance.now() * 0.001;
+
+    this.camera.quaternion
+      .identity()
+      .multiply(this.sensorOrientation)
+      .multiply(this.offsetOrientation);
+
     this.water.material.uniforms["time"].value = time;
     this.renderer.render(this.scene, this.camera);
   }
