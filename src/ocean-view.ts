@@ -163,21 +163,27 @@ export class OceanView {
   animate() {
     const time = performance.now() * 0.001;
 
-    this.camera.quaternion
-      .identity()
-      .multiply(
-        new THREE.Quaternion().setFromAxisAngle(
-          new THREE.Vector3(0, 1, 0),
-          this.yOffset
-        )
+    // Reset camera.
+    this.camera.quaternion.identity();
+
+    // Apply world Y rotation.
+    this.camera.quaternion.multiply(
+      new THREE.Quaternion().setFromAxisAngle(
+        new THREE.Vector3(0, 1, 0),
+        this.yOffset
       )
-      .multiply(this.sensorOrientation)
-      .multiply(
-        new THREE.Quaternion().setFromAxisAngle(
-          new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion),
-          this.xOffset
-        )
-      );
+    );
+
+    // Apply sensor orientation;
+    this.camera.quaternion.multiply(this.sensorOrientation);
+
+    // Apply local X rotation.
+    this.camera.quaternion.multiply(
+      new THREE.Quaternion().setFromAxisAngle(
+        new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion),
+        this.xOffset
+      )
+    );
 
     this.water.material.uniforms["time"].value = time;
     this.renderer.render(this.scene, this.camera);
