@@ -11,6 +11,9 @@ export class OceanView {
   camera: THREE.PerspectiveCamera;
   renderer: THREE.WebGLRenderer;
 
+  dummyCamera: THREE.PerspectiveCamera;
+  rig: THREE.Group = new THREE.Group();
+
   controls: OrbitControls;
   water: Water;
   sun: THREE.Vector3;
@@ -51,16 +54,22 @@ export class OceanView {
       this.container = document.getElementById("container")!;
       this.container.appendChild(this.renderer.domElement);
 
-      this.camera.position.set(30, 30, 100);
+      this.dummyCamera = this.camera.clone();
+      this.dummyCamera.position.set(30, 30, 100);
+
+      this.scene.add(this.rig);
+      this.rig.add(this.camera);
     }
 
     //Controls
     {
-      this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-      this.controls.maxPolarAngle = Math.PI * 0.495;
-      this.controls.target.set(0, 10, 0);
-      this.controls.minDistance = 40.0;
-      this.controls.maxDistance = 200.0;
+      this.controls = new OrbitControls(
+        this.dummyCamera,
+        this.renderer.domElement
+      );
+      this.controls.target.set(0, 30, 0);
+      this.controls.minDistance = 5.0;
+      this.controls.maxDistance = 5.0;
       this.controls.update();
     }
 
@@ -153,6 +162,9 @@ export class OceanView {
   }
 
   animate() {
+    this.rig.rotation.copy(this.dummyCamera.rotation);
+    this.rig.position.copy(this.dummyCamera.position);
+
     const time = performance.now() * 0.001;
     this.water.material.uniforms["time"].value = time;
     this.renderer.render(this.scene, this.camera);
