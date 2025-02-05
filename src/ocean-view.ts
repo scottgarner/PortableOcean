@@ -183,8 +183,8 @@ export class OceanView {
 
     this.camera.quaternion
       .identity()
-      .multiply(this.offsetOrientation)
-      .multiply(this.sensorOrientation);
+      .multiply(this.sensorOrientation)
+      .multiply(this.offsetOrientation);
 
     this.water.material.uniforms["time"].value = time;
     this.renderer.render(this.scene, this.camera);
