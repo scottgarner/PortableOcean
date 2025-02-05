@@ -14,8 +14,10 @@ export class OceanView {
   sun: THREE.Vector3;
   sky: Sky = new Sky();
 
+  xOffset: number = 0;
+  yOffset: number = 0;
+
   sensorOrientation = new THREE.Quaternion();
-  offsetOrientation = new THREE.Quaternion();
 
   parameters = {
     elevation: 2,
@@ -57,36 +59,16 @@ export class OceanView {
     //Controls
     {
       window.addEventListener("keydown", (event) => {
-        const rotationStep = 0.05; // Adjust this value for faster/slower rotation
+        const rotationStep = 0.05;
 
         if (event.key === "ArrowUp") {
-          this.offsetOrientation.multiply(
-            new THREE.Quaternion().setFromAxisAngle(
-              new THREE.Vector3(1, 0, 0),
-              rotationStep
-            )
-          ); // Pitch
+          this.xOffset += rotationStep;
         } else if (event.key === "ArrowDown") {
-          this.offsetOrientation.multiply(
-            new THREE.Quaternion().setFromAxisAngle(
-              new THREE.Vector3(1, 0, 0),
-              -rotationStep
-            )
-          ); // Pitch
+          this.xOffset -= rotationStep;
         } else if (event.key === "ArrowLeft") {
-          this.offsetOrientation.multiply(
-            new THREE.Quaternion().setFromAxisAngle(
-              new THREE.Vector3(0, 1, 0),
-              rotationStep
-            )
-          ); // Yaw
+          this.yOffset += rotationStep;
         } else if (event.key === "ArrowRight") {
-          this.offsetOrientation.multiply(
-            new THREE.Quaternion().setFromAxisAngle(
-              new THREE.Vector3(0, 1, 0),
-              -rotationStep
-            )
-          ); // Yaw
+          this.yOffset -= rotationStep;
         }
       });
     }
@@ -184,7 +166,18 @@ export class OceanView {
     this.camera.quaternion
       .identity()
       .multiply(this.sensorOrientation)
-      .multiply(this.offsetOrientation);
+      .multiply(
+        new THREE.Quaternion().setFromAxisAngle(
+          new THREE.Vector3(0, 1, 0),
+          this.yOffset
+        )
+      )
+      .multiply(
+        new THREE.Quaternion().setFromAxisAngle(
+          new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion),
+          this.xOffset
+        )
+      );
 
     this.water.material.uniforms["time"].value = time;
     this.renderer.render(this.scene, this.camera);
