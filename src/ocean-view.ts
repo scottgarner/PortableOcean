@@ -16,6 +16,8 @@ export class OceanView {
   sun: THREE.Vector3;
   sky: Sky = new Sky();
 
+  root: THREE.Group = new THREE.Group();
+
   parameters = {
     elevation: 2,
     azimuth: 180,
@@ -51,16 +53,17 @@ export class OceanView {
       this.container = document.getElementById("container")!;
       this.container.appendChild(this.renderer.domElement);
 
-      this.camera.position.set(30, 30, 100);
+      this.camera.position.set(0, 10, 0);
+
+      this.scene.add(this.root);
     }
 
     //Controls
     {
       this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-      this.controls.maxPolarAngle = Math.PI * 0.495;
       this.controls.target.set(0, 10, 0);
-      this.controls.minDistance = 40.0;
-      this.controls.maxDistance = 200.0;
+      this.controls.minDistance = 5.0;
+      this.controls.maxDistance = 5.0;
       this.controls.update();
     }
 
@@ -99,13 +102,13 @@ export class OceanView {
 
         this.water.rotation.x = -Math.PI / 2;
 
-        this.scene.add(this.water);
+        this.root.add(this.water);
       }
 
       // Skybox
       {
         this.sky.scale.setScalar(10000);
-        this.scene.add(this.sky);
+        this.root.add(this.sky);
 
         const skyUniforms = this.sky.material.uniforms;
 
@@ -136,7 +139,7 @@ export class OceanView {
     if (this.renderTarget !== undefined) this.renderTarget.dispose();
 
     this.renderTarget = this.pmremGenerator.fromScene(this.sceneEnvironment);
-    this.scene.add(this.sky);
+    this.root.add(this.sky);
 
     this.scene.environment = this.renderTarget.texture;
   }
@@ -149,11 +152,12 @@ export class OceanView {
     const quaternion = new THREE.Quaternion();
     quaternion.setFromEuler(new THREE.Euler(-pitch, -yaw, roll, "YXZ"));
 
-    this.camera.quaternion.copy(quaternion);
+    this.root.quaternion.copy(quaternion);
   }
 
   animate() {
     const time = performance.now() * 0.001;
+
     this.water.material.uniforms["time"].value = time;
     this.renderer.render(this.scene, this.camera);
   }
