@@ -18,6 +18,9 @@ export class OceanView {
   yOffset: number = 0;
   exposure: number = 0.5;
 
+  worldYRotation = new THREE.Quaternion();
+  localXRotation = new THREE.Quaternion();
+
   sensorOrientation = new THREE.Quaternion();
 
   parameters = {
@@ -74,6 +77,14 @@ export class OceanView {
         } else if (event.key === "-") {
           this.exposure -= 0.05;
         }
+        this.worldYRotation.setFromAxisAngle(
+          new THREE.Vector3(0, 1, 0),
+          this.yOffset
+        );
+        this.localXRotation.setFromAxisAngle(
+          new THREE.Vector3(1, 0, 0),
+          this.xOffset
+        );
       });
     }
 
@@ -167,31 +178,14 @@ export class OceanView {
   animate() {
     const time = performance.now() * 0.001;
 
-    this.renderer.toneMappingExposure = this.exposure;
-
     // Reset camera.
     this.camera.quaternion.identity();
-
-    // Apply world Y rotation.
-    this.camera.quaternion.multiply(
-      new THREE.Quaternion().setFromAxisAngle(
-        new THREE.Vector3(0, 1, 0),
-        this.yOffset
-      )
-    );
-
-    // Apply sensor orientation;
+    this.camera.quaternion.multiply(this.worldYRotation);
     this.camera.quaternion.multiply(this.sensorOrientation);
-
-    // Apply local X rotation.
-    this.camera.quaternion.multiply(
-      new THREE.Quaternion().setFromAxisAngle(
-        new THREE.Vector3(1, 0, 0),
-        this.xOffset
-      )
-    );
+    this.camera.quaternion.multiply(this.localXRotation);
 
     this.water.material.uniforms["time"].value = time;
+    this.renderer.toneMappingExposure = this.exposure;
     this.renderer.render(this.scene, this.camera);
   }
 }
